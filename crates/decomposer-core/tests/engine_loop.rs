@@ -16,6 +16,14 @@ fn ask(cat: Category, q: &str) -> TurnAction {
 fn ready(s: &str) -> TurnAction {
     TurnAction::Ready {
         summary: s.into(),
+        project_name: None,
+    }
+}
+
+fn ready_named(s: &str, name: &str) -> TurnAction {
+    TurnAction::Ready {
+        summary: s.into(),
+        project_name: Some(name.into()),
     }
 }
 
@@ -157,4 +165,32 @@ async fn render_all_returns_five_kinds() {
     for (_, body) in &bodies {
         assert!(body.contains("a-useful-tool"));
     }
+}
+
+#[tokio::test]
+async fn ready_with_project_name_renames_session() {
+    let mut session = Session::new(
+        "a CLI tool that summarizes git diffs",
+        Budget { min: 1, max: 5 },
+    );
+    assert_eq!(session.slug, "a-cli-tool-that-summarizes-git-diffs");
+
+    let mock = MockClient::new(vec![
+        ask(Category::Stack, "Q1?"),
+        ready_named("user committed diffrep as the binary name", "diffrep"),
+    ]);
+
+    engine::next_event(&mut session, &mock).await.unwrap();
+    engine::record_answer(&mut session, Category::Stack, "Q1?".into(), "diffrep".into());
+    engine::next_event(&mut session, &mock).await.unwrap();
+
+    assert_eq!(
+        session.slug, "diffrep",
+        "slug must be re-derived from the committed project_name"
+    );
+    assert_eq!(
+        session.idea, "a CLI tool that summarizes git diffs",
+        "original idea string must be preserved for traceability"
+    );
+    assert!(matches!(session.phase, Phase::Ready));
 }

@@ -46,7 +46,13 @@ pub async fn next_event(session: &mut Session, client: &dyn LlmClient) -> Result
             category,
             question,
         }),
-        TurnAction::Ready { summary } if session.at_min() || must_finish => {
+        TurnAction::Ready {
+            summary,
+            project_name,
+        } if session.at_min() || must_finish => {
+            if let Some(name) = project_name.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+                session.rename(name);
+            }
             session.phase = Phase::Ready;
             session.summary = Some(summary.clone());
             Ok(Event::Done { summary })

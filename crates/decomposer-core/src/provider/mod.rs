@@ -16,6 +16,12 @@ pub enum TurnAction {
     },
     Ready {
         summary: String,
+        /// Concrete project name (binary / crate / mod-id) when the
+        /// developer committed one during the interview. Used by the
+        /// engine to re-slug the session before render. `None` if naming
+        /// was deferred to the architect.
+        #[serde(default)]
+        project_name: Option<String>,
     },
 }
 

@@ -49,7 +49,11 @@ separate API key is required.
      if it already covers the category (e.g. "problem: covered by the
      idea — chickens turn into flaming missiles when disturbed"), or
      (c) an explicit N/A with reason ("data_model N/A — stateless CLI
-     over git"). Record the resolution in the readiness summary.
+     over git"). These are the **only three** valid resolutions —
+     "the architect will address this" is **not** valid at the category
+     level. If a category (e.g. `risks`) is unresolved, ask one more
+     question or get the user to mark it N/A with reason. Record the
+     resolution in the readiness summary.
    - For each major stack decision, confirm it's committed / deferred /
      conditional / N/A-with-reason. Don't assume "framework isn't needed"
      without the user actually saying so.

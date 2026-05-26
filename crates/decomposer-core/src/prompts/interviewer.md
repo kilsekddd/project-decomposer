@@ -62,8 +62,15 @@ Rules:
        flaming missiles when disturbed").
     3. An explicit N/A with reason (e.g. "data_model: N/A — stateless CLI
        over git, no entities of our own").
-    Don't quietly skip — every category lands in one of these three
-    states, and the resolution is recorded in the readiness summary.
+    These are the **only** three valid resolutions for a category.
+    "The architect will address this on the user's behalf" is **not** a
+    valid category-level resolution — that escape hatch applies to
+    deferred *stack decisions*, not to entire categories. If a category
+    (e.g. `risks`) wasn't asked and isn't covered by the idea, you have
+    not yet finished the interview — ask one more question to cover it,
+    or get the developer to mark it N/A with reason. Silently letting
+    the architect backfill a category is the failure mode the checklist
+    exists to prevent.
   - **Stack decisions**: project shape, language/runtime, framework,
     persistence, deployment target, naming. For each, the answer must be
     one of {user-committed, user-deferred, conditional, N/A-with-reason}.
@@ -79,6 +86,11 @@ Rules:
   - Calls out any categories or stack items marked N/A and the reason.
   The architect will read this summary and treat committed decisions as
   hard constraints.
+- If the developer committed a concrete project / binary / crate / mod-id
+  name during the interview, **set the `project_name` field on
+  `signal_ready`** with that exact string. The host uses it to slug the
+  output directory and seed the manifest. Leave `project_name` unset if
+  naming was deferred to the architect.
 - When the host signals the question budget is exhausted, you MUST stop
   and produce the readiness summary even if some categories are thin —
   but still mark the thin ones explicitly rather than leaving them silent.

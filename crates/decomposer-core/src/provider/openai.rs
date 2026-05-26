@@ -130,7 +130,8 @@ impl LlmClient for OpenAiClient {
 fn tool_schemas() -> Value {
     let category_enum = json!([
         "problem", "users", "scope", "non_goals",
-        "data_model", "interfaces", "constraints", "risks"
+        "data_model", "interfaces", "stack",
+        "constraints", "risks"
     ]);
     json!([
         {
@@ -158,6 +159,10 @@ fn tool_schemas() -> Value {
                     "type": "object",
                     "properties": {
                         "summary": {"type": "string"},
+                        "project_name": {
+                            "type": "string",
+                            "description": "Concrete project / binary / crate / mod-id name committed by the developer during the interview. Omit if naming was deferred to the architect.",
+                        },
                     },
                     "required": ["summary"],
                 },
@@ -212,7 +217,14 @@ fn parse_turn_response(resp: ChatResponse, must_finish: bool) -> Result<TurnActi
                 .and_then(|v| v.as_str())
                 .ok_or_else(|| Error::Protocol("missing summary".into()))?
                 .to_string();
-            Ok(TurnAction::Ready { summary })
+            let project_name = args
+                .get("project_name")
+                .and_then(|v| v.as_str())
+                .map(str::to_string);
+            Ok(TurnAction::Ready {
+                summary,
+                project_name,
+            })
         }
         other => Err(Error::Protocol(format!("unknown tool {other}"))),
     }
