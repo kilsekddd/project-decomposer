@@ -184,3 +184,24 @@ Tracked here so they don't get lost between sessions.
   task under `crates/decomposer-core/src/provider/`.
 - **LICENSE.** No license is present; required if anyone other than
   the author should use the code.
+- **Submit to `claude-plugins-official`.** Once the plugin has been
+  exercised on a wider variety of ideas and is stable, a PR to
+  `anthropics/claude-plugins-official` would make `decompose` installable
+  via the default marketplace instead of requiring users to add this
+  repo as a custom marketplace.
+
+## Install (end users)
+
+```sh
+# Add the marketplace
+claude plugin marketplace add kilsekddd/project-decomposer
+
+# Install the plugin
+claude plugin install decompose@project-decomposer
+
+# Install the binary (required — the plugin shells out to it)
+cargo install --git https://github.com/kilsekddd/project-decomposer decomposer-cli
+```
+
+Restart Claude Code, then run `/decompose` in an empty project
+directory.
