@@ -182,8 +182,6 @@ Tracked here so they don't get lost between sessions.
 - **More providers.** v1's `LlmClient` trait has Anthropic + OpenAI.
   Adding a third provider (e.g. local Ollama, Bedrock) is a contained
   task under `crates/decomposer-core/src/provider/`.
-- **LICENSE.** No license is present; required if anyone other than
-  the author should use the code.
 - **Submit to `claude-plugins-official`.** Once the plugin has been
   exercised on a wider variety of ideas and is stable, a PR to
   `anthropics/claude-plugins-official` would make `decompose` installable
