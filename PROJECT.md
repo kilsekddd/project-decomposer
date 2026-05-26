@@ -188,15 +188,20 @@ Tracked here so they don't get lost between sessions.
   custom marketplace first. **Gated on diversity testing** — explicitly
   hold off on the PR until the plugin has been exercised on enough
   idea shapes that we've seen what breaks. Concrete prerequisites:
-  - [ ] At least one library-shaped idea exercised end-to-end.
-  - [ ] At least one web-service / daemon idea exercised end-to-end.
-  - [ ] At least one one-off-script idea exercised end-to-end.
-  - [ ] Any bugs surfaced by those runs fixed.
+  - [x] Library-shaped idea exercised end-to-end (`webvtt-parser-lib`).
+  - [x] Web-service / daemon idea exercised end-to-end (`stripe-webhook-relay`).
+  - [x] One-off-script idea exercised end-to-end (`topfiles`).
+  - [ ] Any bugs surfaced by those runs fixed. **Open:** interview
+        sometimes leaves a category (e.g. `risks` in
+        `stripe-webhook-relay`) un-asked and lets the readiness summary
+        record "architect addresses this" — the new checklist rule
+        only allows {covered-in-transcript, covered-by-idea,
+        N/A-with-reason}, so this is a soft prompt-tightening item.
   - [ ] (optional but nice) the v1 ↔ v2 parity audit done so the
         plugin and standalone CLI behave consistently for users who
         try both.
-  - [ ] LICENSE files committed (✅ done — MIT OR Apache-2.0).
-  - [ ] README is presentable on the GitHub front page (✅ done).
+  - [x] LICENSE files committed (MIT OR Apache-2.0).
+  - [x] README is presentable on the GitHub front page.
 
 ## Install (end users)
 
