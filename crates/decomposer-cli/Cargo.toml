@@ -1,0 +1,21 @@
+[package]
+name = "decomposer-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI for project-decomposer"
+
+[[bin]]
+name = "decomposer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+decomposer-core = { path = "../decomposer-core" }
+rustyline.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true

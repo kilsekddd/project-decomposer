@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "project-decomposer-local",
+  "description": "Local marketplace exposing the project-decomposer plugin while developing it.",
+  "owner": {
+    "name": "Bobbi"
+  },
+  "plugins": [
+    {
+      "name": "decompose",
+      "description": "Interview-driven project decomposer. Turns a vague app idea into PRD, Architecture, File Tree, CLAUDE.md, and Tasks markdown artifacts via the host Claude conversation — no separate API key required.",
+      "author": {
+        "name": "Bobbi"
+      },
+      "category": "scaffolding",
+      "source": "./plugin/decompose"
+    }
+  ]
+}

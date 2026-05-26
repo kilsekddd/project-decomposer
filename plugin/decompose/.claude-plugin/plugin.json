@@ -1,0 +1,9 @@
+{
+  "name": "decompose",
+  "version": "0.1.0",
+  "description": "Interview-driven project decomposer. Turns a vague app idea into PRD, Architecture, File Tree, CLAUDE.md, and Tasks markdown artifacts via the host Claude conversation — no separate API key required.",
+  "author": {
+    "name": "Bobbi"
+  },
+  "homepage": "https://github.com/kilsekddd/project-decomposer"
+}
