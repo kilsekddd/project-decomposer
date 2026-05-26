@@ -182,11 +182,21 @@ Tracked here so they don't get lost between sessions.
 - **More providers.** v1's `LlmClient` trait has Anthropic + OpenAI.
   Adding a third provider (e.g. local Ollama, Bedrock) is a contained
   task under `crates/decomposer-core/src/provider/`.
-- **Submit to `claude-plugins-official`.** Once the plugin has been
-  exercised on a wider variety of ideas and is stable, a PR to
-  `anthropics/claude-plugins-official` would make `decompose` installable
-  via the default marketplace instead of requiring users to add this
-  repo as a custom marketplace.
+- **Submit to `claude-plugins-official`.** A PR to
+  `anthropics/claude-plugins-official` adding the `decompose` plugin to
+  the default marketplace, so users don't need to add this repo as a
+  custom marketplace first. **Gated on diversity testing** — explicitly
+  hold off on the PR until the plugin has been exercised on enough
+  idea shapes that we've seen what breaks. Concrete prerequisites:
+  - [ ] At least one library-shaped idea exercised end-to-end.
+  - [ ] At least one web-service / daemon idea exercised end-to-end.
+  - [ ] At least one one-off-script idea exercised end-to-end.
+  - [ ] Any bugs surfaced by those runs fixed.
+  - [ ] (optional but nice) the v1 ↔ v2 parity audit done so the
+        plugin and standalone CLI behave consistently for users who
+        try both.
+  - [ ] LICENSE files committed (✅ done — MIT OR Apache-2.0).
+  - [ ] README is presentable on the GitHub front page (✅ done).
 
 ## Install (end users)
 
