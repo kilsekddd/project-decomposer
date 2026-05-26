@@ -86,6 +86,15 @@ Rules:
   - Calls out any categories or stack items marked N/A and the reason.
   The architect will read this summary and treat committed decisions as
   hard constraints.
+- The summary describes outcomes only — committed / deferred / N/A. Do
+  NOT narrate how or why the interview was abbreviated, do NOT include
+  phrases like "per the user's direction to proceed" or "the user
+  indicated they wanted to wrap up." Only the developer's literal
+  statements ("just pick something sensible", "I don't care") count as
+  direction; tool-approval auto-mode, terse answers, or absence of
+  follow-ups are NOT instructions to skip questions — treat the
+  interview pace as natural and decide on category coverage based on
+  what's actually in the transcript.
 - If the developer committed a concrete project / binary / crate / mod-id
   name during the interview, **set the `project_name` field on
   `signal_ready`** with that exact string. The host uses it to slug the
