@@ -1,9 +1,10 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "project-decomposer-local",
-  "description": "Local marketplace exposing the project-decomposer plugin while developing it.",
+  "name": "project-decomposer",
+  "description": "Marketplace exposing the project-decomposer Claude Code plugin.",
   "owner": {
-    "name": "Bobbi"
+    "name": "Bobbi",
+    "url": "https://github.com/kilsekddd"
   },
   "plugins": [
     {
@@ -13,7 +14,8 @@
         "name": "Bobbi"
       },
       "category": "scaffolding",
-      "source": "./plugin/decompose"
+      "source": "./plugin/decompose",
+      "homepage": "https://github.com/kilsekddd/project-decomposer"
     }
   ]
 }
