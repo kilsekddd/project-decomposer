@@ -191,15 +191,26 @@ Tracked here so they don't get lost between sessions.
   - [x] Library-shaped idea exercised end-to-end (`webvtt-parser-lib`).
   - [x] Web-service / daemon idea exercised end-to-end (`stripe-webhook-relay`).
   - [x] One-off-script idea exercised end-to-end (`topfiles`).
-  - [ ] Any bugs surfaced by those runs fixed. **Open:** interview
-        sometimes leaves a category (e.g. `risks` in
-        `stripe-webhook-relay`) un-asked and lets the readiness summary
-        record "architect addresses this" — the new checklist rule
-        only allows {covered-in-transcript, covered-by-idea,
-        N/A-with-reason}, so this is a soft prompt-tightening item.
-  - [ ] (optional but nice) the v1 ↔ v2 parity audit done so the
-        plugin and standalone CLI behave consistently for users who
-        try both.
+  - [x] Any bugs surfaced by those runs fixed. The
+        "architect-addresses-this" category loophole exposed by
+        `stripe-webhook-relay` was closed by tightening the
+        interviewer prompt; the `brookmark` test then asked all 9
+        categories explicitly and recorded the resolution in the
+        readiness summary (commit `c0e21d1`). Also fixed: the `stack`
+        category was missing from the v1 ask_next_question JSON
+        schema, which would have broken v1 standalone for any
+        stack-category question.
+  - [x] v1 ↔ v2 parity audit done for the common case:
+        `signal_ready` now carries an optional `project_name` field,
+        the engine calls `session.rename` when present, and the
+        standalone CLI gets the same slug-from-committed-name
+        behavior as the plugin's `--name` flag (commit `c0e21d1`).
+        **Known limitation:** when the user defers naming and the
+        architect commits the name during render, the standalone CLI
+        slug still derives from `idea` — there's no post-render
+        rename hook. The plugin path handles this case because
+        SKILL.md instructs the model to read the committed name from
+        the rendered ARCH and pass it via `--name`.
   - [x] LICENSE files committed (MIT OR Apache-2.0).
   - [x] README is presentable on the GitHub front page.
 
