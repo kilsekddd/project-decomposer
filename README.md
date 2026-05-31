@@ -33,12 +33,12 @@ in differently next session. That's the whole point.
 
 Runs the interview inside your existing Claude Code conversation. No
 separate API key required — the plugin uses your Claude Code session's
-auth (works for both API key and Pro/Max OAuth).
+auth (works for both API key and Pro/Max OAuth). Self-contained: it
+ships its own prompt templates and needs no extra binary.
 
 ```sh
 claude plugin marketplace add kilsekddd/project-decomposer
 claude plugin install decompose@project-decomposer
-cargo install --git https://github.com/kilsekddd/project-decomposer decomposer-cli
 ```
 
 Restart Claude Code, open it in an empty project directory, then
@@ -60,9 +60,11 @@ export OPENAI_API_KEY=sk-...
 decomposer --provider openai "a CLI tool that summarizes git diffs"
 ```
 
-Both modes use the exact same prompt templates and produce the exact
-same artifact shape. The plugin path just routes the LLM calls through
-your existing Claude Code session instead of making them itself.
+Both modes use the exact same prompt templates (single source of truth —
+the standalone CLI compiles in the same files the plugin ships) and
+produce the exact same artifact shape. The plugin path routes the LLM
+calls through your existing Claude Code session instead of making them
+itself, and writes the artifacts directly — no binary involved.
 
 ---
 
@@ -154,14 +156,16 @@ extra; API-key Claude Code users see it on the same key.
 
 **Standalone path** (Rust CLI makes API calls directly):
 
-| Stage      | Anthropic Opus 4.7 | Anthropic Haiku 4.5 |
-| ---------- | ------------------ | ------------------- |
-| Interview  | ~$0.05–0.20        | ~$0.01–0.02         |
-| Render     | ~$0.30–0.60        | ~$0.03–0.06         |
-| Total      | **~$0.50–1.00**    | **~$0.05–0.10**     |
+| Stage      | Anthropic Opus  | Anthropic Haiku |
+| ---------- | --------------- | --------------- |
+| Interview  | ~$0.05–0.20     | ~$0.01–0.02     |
+| Render     | ~$0.30–0.60     | ~$0.03–0.06     |
+| Total      | **~$0.50–1.00** | **~$0.05–0.10** |
 
-Wall clock is roughly 3× a single parallel render because of the
-3-stage pipeline. The cross-artifact consistency is worth the latency.
+Figures are approximate and depend on the exact model/tier and how deep
+the interview goes. Wall clock is roughly 3× a single parallel render
+because of the 3-stage pipeline. The cross-artifact consistency is worth
+the latency.
 
 ---
 
@@ -170,13 +174,17 @@ Wall clock is roughly 3× a single parallel render because of the
 Rust workspace, two crates plus the plugin:
 
 - **`decomposer-core`** — engine, session, providers (Anthropic +
-  OpenAI), render orchestration, prompt templates, manifest schema.
+  OpenAI), render orchestration, manifest schema. Compiles in the prompt
+  templates from the plugin via `include_str!` (single source of truth).
 - **`decomposer-cli`** — `decomposer` binary. The interactive standalone
-  flow plus two no-HTTP subcommands (`prompts`, `write-artifacts`) used
-  by the plugin.
-- **`plugin/decompose/`** — Claude Code plugin manifest and skill body.
-  The plugin path routes LLM calls through the host conversation; the
-  binary only handles prompt templates and disk I/O on that path.
+  BYO-API-key flow. (It also still carries two no-HTTP `prompts` /
+  `write-artifacts` subcommands as a generic external-driver surface, but
+  the Claude Code plugin no longer uses them.)
+- **`plugin/decompose/`** — self-contained Claude Code plugin: manifest,
+  skill body, and the canonical prompt templates it ships under
+  `skills/decompose/prompts/`. The plugin routes LLM calls through the
+  host conversation and writes the artifacts itself — no binary on this
+  path.
 
 See [PROJECT.md](PROJECT.md) for the full design rationale, the v1 vs
 v2 protocol details, follow-ups, and known limitations.

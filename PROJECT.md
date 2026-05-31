@@ -39,6 +39,19 @@ the host Claude conversation as the model — no `ANTHROPIC_API_KEY`
 required on the plugin path. Slug, summary, and artifact rendering all
 hold cross-artifact consistency.
 
+**The plugin is fully self-contained** (as of the binary-decoupling
+refactor): it ships the canonical prompt templates under
+`skills/decompose/prompts/` and reads them + writes the artifacts and
+`manifest.json` itself via the host conversation's Read/Write tools. It
+no longer shells out to the `decomposer` binary at all — there is no
+native dependency on the plugin path. The standalone CLI compiles in the
+same prompt files via `include_str!`, so there's exactly one copy and the
+two products can't drift. **Re-validated** with a cold live run
+(`water-logged`, a water-intake CLI) on 2026-05-31: the model read the
+bundled prompts, the 3-stage render held cross-artifact consistency, and
+the hand-written `manifest.json` deserialized cleanly into the real
+`Manifest` serde type (round-trip verified).
+
 What works:
 
 - Two providers in v1 standalone: Anthropic (Messages API + tool_use)
@@ -53,9 +66,10 @@ What works:
   or re-renders artifacts from a completed session.
 - 9 unit/integration tests pass; `MockClient` covers the engine loop
   without API access.
-- v2 plugin: `decomposer prompts <kind>` and `decomposer write-artifacts`
-  subcommands expose the prompt templates and artifact writer to the
-  plugin without it constructing any HTTP client.
+- v2 plugin: self-contained — ships the prompt templates and writes
+  artifacts + manifest itself via the host conversation, no binary call.
+  (The CLI retains `prompts` / `write-artifacts` subcommands as a generic
+  external-driver surface, now unused by the plugin.)
 
 What's been verified live (across PRD, ARCH, FILE_TREE, CLAUDE.md, TASKS):
 
@@ -82,14 +96,19 @@ What's been verified live (across PRD, ARCH, FILE_TREE, CLAUDE.md, TASKS):
 Cargo workspace, two crates:
 
 - `decomposer-core` (library) — engine, session, provider trait,
-  Anthropic + OpenAI impls, render orchestration, manifest, prompts.
-  Exposes `pub fn interviewer_prompt()` and `pub fn render_prompt(kind)`
-  for the plugin path.
+  Anthropic + OpenAI impls, render orchestration, manifest. Compiles in
+  the prompt templates from the plugin tree via `include_str!`, and
+  exposes `pub fn interviewer_prompt()` / `pub fn render_prompt(kind)` for
+  the standalone CLI's own subcommands.
 - `decomposer-cli` (binary) — thin wrapper: argv parsing, TTY/JSON I/O,
-  filesystem side of artifact writing, plus the plugin-path subcommands
-  (`prompts`, `write-artifacts`).
+  filesystem side of artifact writing. Also carries `prompts` /
+  `write-artifacts` subcommands as a generic external-driver surface (the
+  Claude Code plugin no longer uses them).
 
-The headless-lib + thin-CLI split is what makes the v2 plugin viable.
+The headless-lib + thin-CLI split was originally what made the v2 plugin
+viable; after the binary-decoupling refactor the plugin shares only the
+prompt *text* with the CLI (via `include_str!`), not the Rust logic. The
+split still structures the standalone CLI cleanly.
 
 ### Render contract — 3 stages, not parallel
 
@@ -117,22 +136,33 @@ object per line both directions:
 - In: `{"type":"answer", "text":"..."}`
 - Out (terminal): `{"type":"done", "manifest_path":"..."}`
 
-### v2 plugin contract
+### v2 plugin — self-contained (no binary)
 
-The Claude Code plugin at `plugin/decompose/` calls two subcommands:
+The Claude Code plugin at `plugin/decompose/` does everything in the host
+conversation, with no `decomposer` binary call:
 
-- `decomposer prompts <kind>` — prints the canonical prompt for one of
-  `interviewer | prd | architecture | file-tree | claude-md | tasks`.
-  No HTTP. No env var requirements.
-- `decomposer write-artifacts --idea <str> [--name <str>] [--summary <str>]
-  --transcript <file> --bodies <file>` — writes the five artifacts +
-  `manifest.json`. Takes flat JSON inputs (idea + transcript array +
-  bodies map); the binary constructs the `Session`, re-slugs from `--name`
-  if given, and emits `{"type":"done","manifest_path":"..."}`.
+- **Prompts** ship as files under
+  `plugin/decompose/skills/decompose/prompts/` (`interviewer.md`,
+  `render_prd.md`, `render_architecture.md`, `render_file_tree.md`,
+  `render_claude_md.md`, `render_tasks.md`). SKILL.md instructs the model
+  to Read them as instructions. These same files are the standalone CLI's
+  prompts too, pulled in via `include_str!` — one source of truth.
+- **Artifact + manifest writing** is done by the model with the Write
+  tool. SKILL.md specifies the slug rule, the `./decomposed/{slug}/`
+  layout, and the exact `manifest.json` shape (`version: 1`, snake_case
+  category/kind values). The `Manifest` shape on disk stays the contract
+  — it's now mirrored in SKILL.md prose and must be kept in sync with
+  `manifest.rs` / `session.rs` if those structs change.
 
 The plugin renders bodies via the host Claude conversation (so session
 auth is inherited for free) and orchestrates the 3-stage order
-explicitly. The `Manifest` shape on disk is part of the contract.
+explicitly.
+
+**Legacy external-driver surface:** the CLI still has `decomposer prompts
+<kind>` and `decomposer write-artifacts ...` subcommands (flat JSON in,
+writes artifacts + manifest). They're no longer on the plugin path but
+remain as a generic non-Claude-Code driver contract. If they're not worth
+maintaining, removing them + their docs is a clean separable follow-up.
 
 ## Cost & latency shape
 
@@ -158,6 +188,15 @@ to the same key, no second key to provision.
 
 Tracked here so they don't get lost between sessions.
 
+- **~~Re-validate self-contained plugin (post binary-decoupling).~~ DONE
+  2026-05-31.** Cold `/decompose` run (`water-logged`) via
+  `claude --plugin-dir`: (a) the model found and read the bundled
+  `skills/decompose/prompts/*.md`, (b) the 3-stage render held
+  cross-artifact consistency (binary name, Rust/SQLite/clap, configurable
+  units, midnight+streak rules all consistent; rejected alts correctly in
+  key-decisions; no outer fences), and (c) the hand-written `manifest.json`
+  deserialized into the real `Manifest` type and round-tripped. The
+  marketplace form is now unblocked.
 - **v1 ↔ v2 parity audit.** The interactive standalone path
   (`decomposer "<idea>"`) doesn't surface a "what should the project be
   called" question, so the slug still derives from the idea string
@@ -182,12 +221,35 @@ Tracked here so they don't get lost between sessions.
 - **More providers.** v1's `LlmClient` trait has Anthropic + OpenAI.
   Adding a third provider (e.g. local Ollama, Bedrock) is a contained
   task under `crates/decomposer-core/src/provider/`.
-- **Submit to `claude-plugins-official`.** A PR to
-  `anthropics/claude-plugins-official` adding the `decompose` plugin to
-  the default marketplace, so users don't need to add this repo as a
-  custom marketplace first. **Gated on diversity testing** — explicitly
-  hold off on the PR until the plugin has been exercised on enough
-  idea shapes that we've seen what breaks. Concrete prerequisites:
+- **Submit to `claude-plugins-official`.** Get the `decompose` plugin
+  into the default marketplace so users don't need to add this repo as a
+  custom marketplace first. **Submission is via a form, NOT a PR.** The
+  repo (`anthropics/claude-plugins-official`) only accepts contributions
+  from Anthropic team members; community "add my plugin" PRs are
+  auto-closed by a bot (confirmed on PR #2115, 2026-05) with a redirect
+  to the submission form: **https://clau.de/plugin-directory-submission**.
+  Anthropic curates `/external_plugins` + the SHA-pinned `marketplace.json`
+  entries on their side after review. Submission details to paste into
+  the form:
+  - **Plugin name:** `decompose`
+  - **Source repo:** `https://github.com/kilsekddd/project-decomposer`
+  - **Plugin path in repo:** `plugin/decompose` (manifest at
+    `plugin/decompose/.claude-plugin/plugin.json`, version `0.1.0`)
+  - **Category:** `scaffolding`
+  - **Homepage:** `https://github.com/kilsekddd/project-decomposer`
+  - **Security profile:** self-contained — markdown skill + bundled
+    prompt files, no native binary, no MCP server, no network calls on
+    the plugin path. (The binary-decoupling refactor removed the former
+    `cargo install decomposer-cli` dependency, which was the main expected
+    review headwind.)
+  **Was gated on diversity testing** — that's cleared, and the post-refactor
+  re-validation gate is now also cleared. All prerequisites below are done;
+  the form is ready to submit. Prerequisites:
+  - [x] Re-validate the self-contained plugin flow post-refactor (cold
+        `/decompose` run `water-logged`, 2026-05-31): model read the bundled
+        prompts, 3-stage render held consistency, and the model-written
+        `manifest.json` deserialized into the real `Manifest` type
+        (round-trip verified).
   - [x] Library-shaped idea exercised end-to-end (`webvtt-parser-lib`).
   - [x] Web-service / daemon idea exercised end-to-end (`stripe-webhook-relay`).
   - [x] One-off-script idea exercised end-to-end (`topfiles`).
@@ -210,7 +272,7 @@ Tracked here so they don't get lost between sessions.
         slug still derives from `idea` — there's no post-render
         rename hook. The plugin path handles this case because
         SKILL.md instructs the model to read the committed name from
-        the rendered ARCH and pass it via `--name`.
+        the rendered ARCH and compute the output slug from it directly.
   - [x] LICENSE files committed (MIT OR Apache-2.0).
   - [x] README is presentable on the GitHub front page.
 
@@ -220,12 +282,16 @@ Tracked here so they don't get lost between sessions.
 # Add the marketplace
 claude plugin marketplace add kilsekddd/project-decomposer
 
-# Install the plugin
+# Install the plugin (self-contained — no binary needed)
 claude plugin install decompose@project-decomposer
-
-# Install the binary (required — the plugin shells out to it)
-cargo install --git https://github.com/kilsekddd/project-decomposer decomposer-cli
 ```
 
 Restart Claude Code, then run `/decompose` in an empty project
 directory.
+
+The standalone Rust CLI (BYO-API-key, non-Claude-Code use) is a separate
+install and is **not** required for the plugin:
+
+```sh
+cargo install --git https://github.com/kilsekddd/project-decomposer decomposer-cli
+```
