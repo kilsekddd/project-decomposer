@@ -200,3 +200,11 @@ Dual-licensed under your choice of:
 
 SPDX identifier: `MIT OR Apache-2.0`. Contributions are accepted under
 the same terms.
+
+---
+
+## Privacy
+
+The plugin collects no data, sends no data, and uses no telemetry — it runs
+entirely inside your Claude Code session and writes only to your local
+filesystem. See [PRIVACY.md](PRIVACY.md) for the full statement.
