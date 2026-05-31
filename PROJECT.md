@@ -221,30 +221,43 @@ Tracked here so they don't get lost between sessions.
 - **More providers.** v1's `LlmClient` trait has Anthropic + OpenAI.
   Adding a third provider (e.g. local Ollama, Bedrock) is a contained
   task under `crates/decomposer-core/src/provider/`.
-- **Submit to `claude-plugins-official`.** Get the `decompose` plugin
-  into the default marketplace so users don't need to add this repo as a
-  custom marketplace first. **Submission is via a form, NOT a PR.** The
-  repo (`anthropics/claude-plugins-official`) only accepts contributions
-  from Anthropic team members; community "add my plugin" PRs are
-  auto-closed by a bot (confirmed on PR #2115, 2026-05) with a redirect
-  to the submission form: **https://clau.de/plugin-directory-submission**.
-  Anthropic curates `/external_plugins` + the SHA-pinned `marketplace.json`
-  entries on their side after review. Submission details to paste into
-  the form:
+- **Submit to the `claude-community` marketplace.** (Corrected
+  2026-05-31 from the official Claude Code docs — the earlier "submit to
+  `claude-plugins-official`" framing was wrong on every point.) The facts:
+  - **`claude-plugins-official`** is curated by Anthropic at its sole
+    discretion. **There is NO application process**, and no form/PR adds a
+    plugin to it. Don't target it. (The `clau.de/plugin-directory-submission`
+    short-link just 302-redirects to the docs section
+    `code.claude.com/docs/en/plugins#submit-your-plugin-to-the-official-marketplace`
+    — it is not a form.)
+  - **`claude-community`** (`anthropics/claude-plugins-community`) is the
+    public community marketplace where third-party submissions land after
+    review. Users add it with
+    `/plugin marketplace add anthropics/claude-plugins-community` and
+    install as `@claude-community`. **This is our target.**
+  - **How to submit:** one of two in-app forms (login required):
+    Claude.ai → `https://claude.ai/settings/plugins/submit`, or
+    Console → `https://platform.claude.com/plugins/submit`.
+  - **Before submitting:** `claude plugin validate --strict ./plugin/decompose`
+    must pass (it does, 2026-05-31). The review pipeline runs the same
+    check + automated safety screening.
+  - **After approval:** the plugin is SHA-pinned into the community catalog
+    (`.claude-plugin/marketplace.json`); CI bumps the pin as we push new
+    commits; the public catalog syncs nightly (so expect a delay between
+    approval and appearing installable).
+  Details for the form:
   - **Plugin name:** `decompose`
   - **Source repo:** `https://github.com/kilsekddd/project-decomposer`
   - **Plugin path in repo:** `plugin/decompose` (manifest at
     `plugin/decompose/.claude-plugin/plugin.json`, version `0.1.0`)
-  - **Category:** `scaffolding`
   - **Homepage:** `https://github.com/kilsekddd/project-decomposer`
   - **Security profile:** self-contained — markdown skill + bundled
     prompt files, no native binary, no MCP server, no network calls on
     the plugin path. (The binary-decoupling refactor removed the former
-    `cargo install decomposer-cli` dependency, which was the main expected
-    review headwind.)
+    `cargo install decomposer-cli` dependency.)
   **Was gated on diversity testing** — that's cleared, and the post-refactor
   re-validation gate is now also cleared. All prerequisites below are done;
-  the form is ready to submit. Prerequisites:
+  the community form is ready to submit. Prerequisites:
   - [x] Re-validate the self-contained plugin flow post-refactor (cold
         `/decompose` run `water-logged`, 2026-05-31): model read the bundled
         prompts, 3-stage render held consistency, and the model-written
