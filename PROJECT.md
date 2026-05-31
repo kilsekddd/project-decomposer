@@ -221,8 +221,11 @@ Tracked here so they don't get lost between sessions.
 - **More providers.** v1's `LlmClient` trait has Anthropic + OpenAI.
   Adding a third provider (e.g. local Ollama, Bedrock) is a contained
   task under `crates/decomposer-core/src/provider/`.
-- **Submit to the `claude-community` marketplace.** (Corrected
-  2026-05-31 from the official Claude Code docs — the earlier "submit to
+- **Submit to the `claude-community` marketplace.** ✅ **SUBMITTED
+  2026-05-31** via the in-app form. Now awaiting Anthropic's review; on
+  approval the plugin is SHA-pinned into the community catalog and the
+  public `marketplace.json` syncs nightly. (Corrected 2026-05-31 from the
+  official Claude Code docs — the earlier "submit to
   `claude-plugins-official`" framing was wrong on every point.) The facts:
   - **`claude-plugins-official`** is curated by Anthropic at its sole
     discretion. **There is NO application process**, and no form/PR adds a
