@@ -21,11 +21,20 @@ pub fn write_artifacts(
 ) -> Result<(PathBuf, Vec<WrittenArtifact>)> {
     std::fs::create_dir_all(out_dir)?;
 
-    let mut written = Vec::with_capacity(bodies.len());
+    let mut written = Vec::with_capacity(bodies.len() + 1);
     for (kind, body) in bodies {
         let path = out_dir.join(kind.filename());
         std::fs::write(&path, body)?;
         written.push(WrittenArtifact { kind: *kind, path });
+
+        if *kind == ArtifactKind::ClaudeMd {
+            let agents_path = out_dir.join(ArtifactKind::AgentsMd.filename());
+            std::fs::write(&agents_path, body)?;
+            written.push(WrittenArtifact {
+                kind: ArtifactKind::AgentsMd,
+                path: agents_path,
+            });
+        }
     }
 
     let manifest = Manifest::build(session, provider, model, &written);

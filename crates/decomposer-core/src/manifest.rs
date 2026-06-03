@@ -31,7 +31,7 @@ impl Manifest {
         written: &[WrittenArtifact],
     ) -> Self {
         Self {
-            version: 1,
+            version: 2,
             slug: session.slug.clone(),
             idea: session.idea.clone(),
             provider: provider.to_string(),

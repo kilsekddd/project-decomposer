@@ -71,7 +71,7 @@ enum Command {
         kind: PromptKind,
     },
 
-    /// Write the five artifacts + manifest.json from a transcript and a
+    /// Write the artifact set + manifest.json from a transcript and a
     /// bodies map produced by an external LLM driver. Used by the v2 Claude
     /// Code plugin, which renders bodies via the host conversation rather
     /// than making API calls itself.
@@ -183,8 +183,8 @@ async fn run() -> Result<()> {
         .clone()
         .unwrap_or_else(|| PathBuf::from("decomposed").join(&session.slug));
 
-    let resumed_complete = cli.resume.is_some()
-        && matches!(session.phase, Phase::Ready | Phase::Done);
+    let resumed_complete =
+        cli.resume.is_some() && matches!(session.phase, Phase::Ready | Phase::Done);
 
     if !resumed_complete {
         drive_interview(&mut session, client.as_ref(), cli.json).await?;

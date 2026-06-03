@@ -4,7 +4,7 @@
 //! - [`Session`], [`Exchange`], [`Category`], [`Phase`], [`Budget`]
 //! - [`engine::run_quiz`] drives the quiz loop against any [`LlmClient`]
 //! - [`provider::LlmClient`] trait + provider impls
-//! - [`render::render_all`] turns a completed session into the five artifacts
+//! - [`render::render_all`] turns a completed session into the rendered artifacts
 //! - [`Manifest`] is the persisted on-disk record
 
 pub mod engine;
@@ -33,6 +33,7 @@ pub fn render_prompt(kind: ArtifactKind) -> &'static str {
         ArtifactKind::Architecture => prompts::RENDER_ARCHITECTURE,
         ArtifactKind::FileTree => prompts::RENDER_FILE_TREE,
         ArtifactKind::ClaudeMd => prompts::RENDER_CLAUDE_MD,
+        ArtifactKind::AgentsMd => prompts::RENDER_CLAUDE_MD,
         ArtifactKind::Tasks => prompts::RENDER_TASKS,
     }
 }

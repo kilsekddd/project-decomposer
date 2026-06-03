@@ -1,13 +1,13 @@
 ---
 name: decompose
 description: |
-  Turn a vague app idea into a coherent starting brief — PRD, Architecture, File Tree, CLAUDE.md, and Tasks markdown — via a focused interview. Use when the user is starting a new project, scaffolding from an idea, asks to decompose or plan a project, or explicitly invokes /decompose.
+  Turn a vague app idea into a coherent starting brief — PRD, Architecture, File Tree, CLAUDE.md, AGENTS.md, and Tasks markdown — via a focused interview. Use when the user is starting a new project, scaffolding from an idea, asks to decompose or plan a project, or explicitly invokes /decompose.
 ---
 
 # project-decomposer
 
-Run a short interview, then render five canonical artifacts (PRD.md,
-ARCHITECTURE.md, FILE_TREE.md, CLAUDE.md, TASKS.md) plus `manifest.json` into
+Run a short interview, then render six canonical artifacts (PRD.md,
+ARCHITECTURE.md, FILE_TREE.md, CLAUDE.md, AGENTS.md, TASKS.md) plus `manifest.json` into
 `./decomposed/{slug}/`. **You** (this conversation) do all the work: the
 prompt templates ship as files inside this skill, and you read them, run the
 interview, render the bodies, and write the files yourself. No external
@@ -108,22 +108,23 @@ single hyphen, and trimming leading/trailing hyphens (e.g. `diffrep` →
 ever committed, fall back to slugifying the user's one-line idea the same
 way. The output directory is `./decomposed/{slug}/`.
 
-Write the five artifact files, each as raw markdown (no outer fences), with
+Write the six artifact files, each as raw markdown (no outer fences), with
 the Write tool:
 
 - `./decomposed/{slug}/PRD.md`
 - `./decomposed/{slug}/ARCHITECTURE.md`
 - `./decomposed/{slug}/FILE_TREE.md`
 - `./decomposed/{slug}/CLAUDE.md`
+- `./decomposed/{slug}/AGENTS.md` (copy the exact `CLAUDE.md` body)
 - `./decomposed/{slug}/TASKS.md`
 
 Then write `./decomposed/{slug}/manifest.json` with exactly this shape (it is
 the on-disk contract — keep the field names, snake_case category/kind values,
-and `version: 1`):
+and `version: 2`):
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "slug": "<slug>",
   "idea": "<the user's original one-line idea>",
   "provider": "claude-code",
@@ -145,6 +146,7 @@ and `version: 1`):
     { "kind": "architecture", "path": "decomposed/<slug>/ARCHITECTURE.md" },
     { "kind": "file_tree",    "path": "decomposed/<slug>/FILE_TREE.md" },
     { "kind": "claude_md",    "path": "decomposed/<slug>/CLAUDE.md" },
+    { "kind": "agents_md",    "path": "decomposed/<slug>/AGENTS.md" },
     { "kind": "tasks",        "path": "decomposed/<slug>/TASKS.md" }
   ]
 }
@@ -156,8 +158,8 @@ Category values in `transcript` must be snake_case from the set: `problem`,
 current working directory (matching what the standalone CLI writes).
 
 Show the user the manifest path and the list of files written. Offer to
-read the `CLAUDE.md` so the rest of the conversation can pick up from the
-brief.
+read the guidance file (`CLAUDE.md` for Claude Code or `AGENTS.md` for Codex)
+so the rest of the conversation can pick up from the brief.
 
 ## Notes
 

@@ -1,7 +1,7 @@
 # project-decomposer
 
 A Rust CLI that interviews a developer about an app idea via an
-LLM-driven adaptive quiz, then emits a coherent set of five markdown
+LLM-driven adaptive quiz, then emits a coherent set of six markdown
 artifacts to feed to a coding assistant. Ships a Claude Code plugin
 (`/decompose`) that runs the interview inside an existing Claude Code
 session, using the host session's auth — no separate API key required.
@@ -9,7 +9,7 @@ session, using the host session's auth — no separate API key required.
 ## Goal
 
 Turn "I have a vague app idea" into a grounded starting point for an AI
-coding assistant in one short interview. The five artifacts are designed
+coding assistant in one short interview. The six artifacts are designed
 to be dropped into an empty project directory and read by an assistant
 (e.g. Claude Code) as the canonical brief:
 
@@ -23,6 +23,8 @@ to be dropped into an empty project directory and read by an assistant
 - `FILE_TREE.md` — directory layout with one-line per-path responsibilities.
 - `CLAUDE.md` — short, declarative guidance for an AI assistant: stack,
   conventions, things to avoid, run/build/test.
+- `AGENTS.md` — the same project guidance for Codex and other
+  AGENTS-aware coding agents.
 - `TASKS.md` — ordered checkbox build plan grouped by milestones, with
   file-touch annotations.
 
@@ -71,7 +73,7 @@ What works:
   (The CLI retains `prompts` / `write-artifacts` subcommands as a generic
   external-driver surface, now unused by the plugin.)
 
-What's been verified live (across PRD, ARCH, FILE_TREE, CLAUDE.md, TASKS):
+What's been verified live (across PRD, ARCH, FILE_TREE, CLAUDE.md, AGENTS.md, TASKS):
 
 - Cross-artifact name consistency — slug derives from the committed
   project name via `Session::rename`, not from the user's vague idea
@@ -149,10 +151,11 @@ conversation, with no `decomposer` binary call:
   prompts too, pulled in via `include_str!` — one source of truth.
 - **Artifact + manifest writing** is done by the model with the Write
   tool. SKILL.md specifies the slug rule, the `./decomposed/{slug}/`
-  layout, and the exact `manifest.json` shape (`version: 1`, snake_case
-  category/kind values). The `Manifest` shape on disk stays the contract
-  — it's now mirrored in SKILL.md prose and must be kept in sync with
-  `manifest.rs` / `session.rs` if those structs change.
+  layout, and the exact `manifest.json` shape (`version: 2`, snake_case
+  category/kind values, and both `claude_md` and `agents_md` guidance
+  artifacts). The `Manifest` shape on disk stays the contract — it's now
+  mirrored in SKILL.md prose and must be kept in sync with `manifest.rs` /
+  `session.rs` if those structs change.
 
 The plugin renders bodies via the host Claude conversation (so session
 auth is inherited for free) and orchestrates the 3-stage order

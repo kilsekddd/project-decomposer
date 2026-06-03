@@ -32,6 +32,7 @@ pub enum ArtifactKind {
     Architecture,
     FileTree,
     ClaudeMd,
+    AgentsMd,
     Tasks,
 }
 
@@ -42,6 +43,7 @@ impl ArtifactKind {
             ArtifactKind::Architecture => "ARCHITECTURE.md",
             ArtifactKind::FileTree => "FILE_TREE.md",
             ArtifactKind::ClaudeMd => "CLAUDE.md",
+            ArtifactKind::AgentsMd => "AGENTS.md",
             ArtifactKind::Tasks => "TASKS.md",
         }
     }

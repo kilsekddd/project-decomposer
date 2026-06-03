@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "decompose",
-      "description": "Interview-driven project decomposer. Turns a vague app idea into PRD, Architecture, File Tree, CLAUDE.md, and Tasks markdown artifacts via the host Claude conversation — no separate API key required.",
+      "description": "Interview-driven project decomposer. Turns a vague app idea into PRD, Architecture, File Tree, CLAUDE.md, AGENTS.md, and Tasks markdown artifacts via the host Claude conversation — no separate API key required.",
       "author": {
         "name": "Bobbi"
       },

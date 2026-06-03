@@ -50,7 +50,11 @@ pub async fn next_event(session: &mut Session, client: &dyn LlmClient) -> Result
             summary,
             project_name,
         } if session.at_min() || must_finish => {
-            if let Some(name) = project_name.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+            if let Some(name) = project_name
+                .as_deref()
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+            {
                 session.rename(name);
             }
             session.phase = Phase::Ready;
@@ -78,7 +82,7 @@ pub fn record_answer(
     });
 }
 
-/// Render all five artifacts in three stages:
+/// Render the five LLM-authored bodies in three stages:
 ///   1. PRD alone — establishes names, scope, non-goals.
 ///   2. ARCHITECTURE with PRD as context — resolves any stack/language
 ///      ambiguity the PRD left open.

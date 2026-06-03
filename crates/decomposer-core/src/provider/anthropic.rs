@@ -48,9 +48,7 @@ impl AnthropicClient {
         let status = resp.status();
         let text = resp.text().await?;
         if !status.is_success() {
-            return Err(Error::Protocol(format!(
-                "anthropic HTTP {status}: {text}"
-            )));
+            return Err(Error::Protocol(format!("anthropic HTTP {status}: {text}")));
         }
         serde_json::from_str(&text).map_err(Error::from)
     }
@@ -260,6 +258,7 @@ fn render_system_prompt(kind: ArtifactKind) -> &'static str {
         ArtifactKind::Architecture => prompts::RENDER_ARCHITECTURE,
         ArtifactKind::FileTree => prompts::RENDER_FILE_TREE,
         ArtifactKind::ClaudeMd => prompts::RENDER_CLAUDE_MD,
+        ArtifactKind::AgentsMd => prompts::RENDER_CLAUDE_MD,
         ArtifactKind::Tasks => prompts::RENDER_TASKS,
     }
 }
@@ -292,10 +291,7 @@ pub(crate) fn format_turn_prompt(session: &Session, must_finish: bool) -> String
     s
 }
 
-pub(crate) fn format_render_prompt(
-    session: &Session,
-    prior: &[(ArtifactKind, &str)],
-) -> String {
+pub(crate) fn format_render_prompt(session: &Session, prior: &[(ArtifactKind, &str)]) -> String {
     let mut s = String::new();
     s.push_str("Project idea: ");
     s.push_str(&session.idea);
@@ -340,4 +336,3 @@ fn category_str(c: Category) -> &'static str {
         Category::Risks => "risks",
     }
 }
-

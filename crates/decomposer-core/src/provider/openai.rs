@@ -129,9 +129,15 @@ impl LlmClient for OpenAiClient {
 
 fn tool_schemas() -> Value {
     let category_enum = json!([
-        "problem", "users", "scope", "non_goals",
-        "data_model", "interfaces", "stack",
-        "constraints", "risks"
+        "problem",
+        "users",
+        "scope",
+        "non_goals",
+        "data_model",
+        "interfaces",
+        "stack",
+        "constraints",
+        "risks"
     ]);
     json!([
         {
@@ -236,6 +242,7 @@ fn render_system_prompt(kind: ArtifactKind) -> &'static str {
         ArtifactKind::Architecture => prompts::RENDER_ARCHITECTURE,
         ArtifactKind::FileTree => prompts::RENDER_FILE_TREE,
         ArtifactKind::ClaudeMd => prompts::RENDER_CLAUDE_MD,
+        ArtifactKind::AgentsMd => prompts::RENDER_CLAUDE_MD,
         ArtifactKind::Tasks => prompts::RENDER_TASKS,
     }
 }

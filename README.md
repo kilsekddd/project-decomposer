@@ -5,8 +5,8 @@ coding assistant from re-architecting the project every time you add a
 feature.**
 
 `project-decomposer` interviews you about an app you want to build, then
-produces five canonical markdown documents — `PRD.md`,
-`ARCHITECTURE.md`, `FILE_TREE.md`, `CLAUDE.md`, `TASKS.md` — plus a
+produces six canonical markdown documents — `PRD.md`,
+`ARCHITECTURE.md`, `FILE_TREE.md`, `CLAUDE.md`, `AGENTS.md`, `TASKS.md` — plus a
 `manifest.json`. Drop them into an empty project directory and an AI
 coding assistant has the brief it needs to build the project without
 drifting.
@@ -27,7 +27,40 @@ in differently next session. That's the whole point.
 
 ---
 
-## Two ways to use it
+## Three ways to use it
+
+### As a Codex plugin
+
+Runs the interview inside your existing Codex conversation. No separate
+LLM API key is required — the plugin uses the host Codex session for the
+interview and artifact renders. Self-contained: it ships its own prompt
+templates and needs no extra binary.
+
+Install the marketplace from this repo's `.agents/plugins/marketplace.json`,
+then install `decompose-codex`.
+
+Open Codex in the directory where you want `./decomposed/{slug}/` to be
+written, then ask it to decompose your app idea. The Codex plugin writes the
+same canonical artifact set, including both `CLAUDE.md` and `AGENTS.md` for
+cross-agent project guidance.
+
+In Codex CLI, skills are not exposed as bare top-level slash commands, so
+`/decompose` is not the invocation form. Use the skill picker, mention the
+skill directly, or create/use a custom prompt:
+
+```text
+/skills
+$decompose
+/prompts:decompose "a tiny app that tracks pantry inventory from grocery receipts"
+```
+
+For CLI use, start `codex` from the output parent directory:
+
+```sh
+mkdir -p ~/Projects/briefs
+cd ~/Projects/briefs
+codex
+```
 
 ### As a Claude Code plugin (recommended)
 
@@ -46,7 +79,7 @@ type `/decompose`.
 
 ### As a standalone Rust CLI
 
-For automation, CI, or when you're not in Claude Code. Brings its own
+For automation, CI, or use outside the host-session plugins. Brings its own
 LLM API key.
 
 ```sh
@@ -60,11 +93,11 @@ export OPENAI_API_KEY=sk-...
 decomposer --provider openai "a CLI tool that summarizes git diffs"
 ```
 
-Both modes use the exact same prompt templates (single source of truth —
-the standalone CLI compiles in the same files the plugin ships) and
-produce the exact same artifact shape. The plugin path routes the LLM
-calls through your existing Claude Code session instead of making them
-itself, and writes the artifacts directly — no binary involved.
+Both plugin modes use bundled prompt templates and route LLM calls through
+the existing host session instead of making them directly. The standalone
+CLI compiles in the same prompt text for BYO-API-key use. All modes
+produce the same canonical artifact shape, including both `CLAUDE.md` and
+`AGENTS.md`.
 
 ---
 
@@ -79,6 +112,7 @@ decomposed/chixpocalypse/
 ├── ARCHITECTURE.md    # components, data model, key decisions + rejected alternatives
 ├── FILE_TREE.md       # full directory layout with per-path responsibilities
 ├── CLAUDE.md          # stack, conventions, things to avoid, build/run/test
+├── AGENTS.md          # same guidance for Codex and other AGENTS-aware tools
 ├── TASKS.md           # ordered milestone checklist with file-touch annotations
 └── manifest.json      # session metadata + readiness summary
 ```
@@ -140,7 +174,7 @@ load-bearing.
    `ARCHITECTURE` as prior context, instructed to *"honor every
    concrete decision ARCHITECTURE.md committed to."*
 
-Early experiments rendered all five artifacts in one parallel batch.
+Early experiments rendered all artifacts in one parallel batch.
 That produced inconsistencies: binary names drifted, dependency choices
 contradicted each other, and TASKS would hedge with `.*` file
 extensions while FILE_TREE committed to `.rs`. The three-stage pipeline
@@ -150,9 +184,9 @@ fixes this by forcing `ARCHITECTURE` to be the canonical resolver.
 
 ## Cost & latency
 
-**Plugin path** (Claude Code session does the LLM work): billed to your
-existing Claude Code subscription. Pro/Max subscribers pay nothing
-extra; API-key Claude Code users see it on the same key.
+**Plugin paths** (Claude Code or Codex session does the LLM work): billed to
+your existing host subscription/session. No second provider key is needed by
+the plugin itself.
 
 **Standalone path** (Rust CLI makes API calls directly):
 
@@ -171,7 +205,7 @@ the latency.
 
 ## Architecture
 
-Rust workspace, two crates plus the plugin:
+Rust workspace, two crates plus host-session plugins:
 
 - **`decomposer-core`** — engine, session, providers (Anthropic +
   OpenAI), render orchestration, manifest schema. Compiles in the prompt
@@ -179,12 +213,15 @@ Rust workspace, two crates plus the plugin:
 - **`decomposer-cli`** — `decomposer` binary. The interactive standalone
   BYO-API-key flow. (It also still carries two no-HTTP `prompts` /
   `write-artifacts` subcommands as a generic external-driver surface, but
-  the Claude Code plugin no longer uses them.)
+  the host-session plugins no longer use them.)
 - **`plugin/decompose/`** — self-contained Claude Code plugin: manifest,
   skill body, and the canonical prompt templates it ships under
   `skills/decompose/prompts/`. The plugin routes LLM calls through the
   host conversation and writes the artifacts itself — no binary on this
   path.
+- **`plugin/decompose-codex/`** — self-contained Codex plugin: Codex
+  manifest, skill body, and bundled prompt templates. It follows the same
+  host-session pattern and writes the same v2 manifest/artifact set.
 
 See [PROJECT.md](PROJECT.md) for the full design rationale, the v1 vs
 v2 protocol details, follow-ups, and known limitations.
@@ -205,6 +242,6 @@ the same terms.
 
 ## Privacy
 
-The plugin collects no data, sends no data, and uses no telemetry — it runs
-entirely inside your Claude Code session and writes only to your local
+The plugins collect no data, send no data, and use no telemetry — they run
+entirely inside your Claude Code or Codex session and write only to your local
 filesystem. See [PRIVACY.md](PRIVACY.md) for the full statement.

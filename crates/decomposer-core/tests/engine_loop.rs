@@ -32,9 +32,7 @@ async fn answer_loop(session: &mut Session, client: &MockClient) -> Vec<String> 
     loop {
         match engine::next_event(session, client).await.unwrap() {
             Event::Question {
-                category,
-                question,
-                ..
+                category, question, ..
             } => {
                 questions.push(question.clone());
                 engine::record_answer(session, category, question, "an answer".into());
@@ -64,10 +62,7 @@ async fn happy_path_min_questions_then_ready() {
 #[tokio::test]
 async fn ready_before_min_is_rejected() {
     let mut session = Session::new("idea", Budget { min: 4, max: 10 });
-    let mock = MockClient::new(vec![
-        ask(Category::Problem, "Q1?"),
-        ready("too soon"),
-    ]);
+    let mock = MockClient::new(vec![ask(Category::Problem, "Q1?"), ready("too soon")]);
 
     engine::next_event(&mut session, &mock).await.unwrap();
     engine::record_answer(&mut session, Category::Problem, "Q1?".into(), "a".into());
@@ -151,7 +146,7 @@ async fn resume_from_done_short_circuits_interview() {
 }
 
 #[tokio::test]
-async fn render_all_returns_five_kinds() {
+async fn render_all_returns_rendered_kinds() {
     let mut session = Session::new("a useful tool", Budget { min: 1, max: 2 });
     let mock = MockClient::new(vec![ask(Category::Problem, "Q1?"), ready("ok")]);
 
@@ -181,7 +176,12 @@ async fn ready_with_project_name_renames_session() {
     ]);
 
     engine::next_event(&mut session, &mock).await.unwrap();
-    engine::record_answer(&mut session, Category::Stack, "Q1?".into(), "diffrep".into());
+    engine::record_answer(
+        &mut session,
+        Category::Stack,
+        "Q1?".into(),
+        "diffrep".into(),
+    );
     engine::next_event(&mut session, &mock).await.unwrap();
 
     assert_eq!(

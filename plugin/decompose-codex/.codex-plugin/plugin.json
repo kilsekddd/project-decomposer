@@ -1,0 +1,37 @@
+{
+  "name": "decompose-codex",
+  "version": "0.2.0+codex.20260603004707",
+  "description": "Interview-driven project decomposer for Codex. Turns a vague app idea into PRD, Architecture, File Tree, CLAUDE.md, AGENTS.md, and Tasks markdown artifacts via the host Codex conversation, with no separate API key required.",
+  "author": {
+    "name": "Bobbi"
+  },
+  "homepage": "https://github.com/kilsekddd/project-decomposer",
+  "repository": "https://github.com/kilsekddd/project-decomposer",
+  "license": "MIT OR Apache-2.0",
+  "keywords": [
+    "project-planning",
+    "scaffolding",
+    "prd",
+    "architecture",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Project Decomposer",
+    "shortDescription": "Turn app ideas into build briefs for Codex",
+    "longDescription": "Project Decomposer runs a focused interview inside Codex, renders a PRD, architecture, file tree, assistant guidance, and task plan through the host conversation, then writes the canonical artifact set directly from the plugin.",
+    "developerName": "Bobbi",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/kilsekddd/project-decomposer",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "defaultPrompt": [
+      "Decompose this app idea into a build brief"
+    ],
+    "brandColor": "#2563EB"
+  }
+}
